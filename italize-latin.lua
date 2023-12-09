@@ -2,8 +2,8 @@
 --
 -- prints WARN if word have mixed alphabets
 --
--- bugs: if input text have words with italized latin with punctiation
--- characters, then its punctiation will be removed
+-- bugs: if input text have words with italized latin with punctuation
+-- characters, then its punctuation will be removed
 
 ---@diagnostic disable-next-line: undefined-global
 local pandoc = pandoc
@@ -33,8 +33,6 @@ local function split_by_borders_punctuation(text)
     return left, middle, right
 end
 
-local last_redacted = ""
-
 function Str(elem)
     local text = elem.text
     local left, middle, right = split_by_borders_punctuation(text)
@@ -49,8 +47,6 @@ function Str(elem)
         return
     end
 
-    last_redacted = middle
-
     -- wrapping with italic style
     local obj = {}
     if left then
@@ -60,26 +56,22 @@ function Str(elem)
     if right then
         table.insert(obj, pandoc.Str(right))
     end
-    return obj
+    return obj, false
 end
 
--- the problem is in that double Emph results in non-Emph, so there we are
--- unwrapping redundant Emph's from previous turn
---
--- for now, new wrapped element matches the next after whom wrapped it, we
--- relying on it
 function Emph(elem)
-    local child = elem.content[1]
-    if child.t == "Emph" then
-        local child2 = child.content[1]
-        if child2.t == "Str" then
-            if child2.text == last_redacted then
-                -- results in unwrapped one level of Emph
-                return pandoc.Emph(child2.text)
-            end
-        end
-    end
+    -- don't traverse into existing Emph's because then it will double-Emph,
+    -- and then they are negates each other, which means no-Emph. So, we don't
+    -- want un-Emph those latin words that was manually set in source text
+    return elem, false
 end
 
 -- P.S. codeblocks and inlined code are not containing Str, so everything is
 -- fine, they are not italized
+
+local filter = {
+    traverse = "topdown",
+    Emph = Emph,
+    Str = Str,
+}
+return { filter }
