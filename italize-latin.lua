@@ -66,11 +66,17 @@ function Emph(elem)
     return elem, false
 end
 
+function Link(elem)
+    -- don't traverse into links, we don't want to italize them
+    return elem, false
+end
+
 -- P.S. codeblocks and inlined code are not containing Str, so everything is
 -- fine, they are not italized
 
 local filter = {
     traverse = "topdown",
+    Link = Link,
     Emph = Emph,
     Str = Str,
 }
