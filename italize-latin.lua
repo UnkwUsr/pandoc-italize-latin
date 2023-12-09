@@ -71,11 +71,20 @@ function Link(elem)
     return elem, false
 end
 
+function Div(elem)
+    -- don't traverse into references section
+    -- (still not sure should it be, but ok)
+    if elem.identifier == "refs" and elem.classes[1] == "references" then
+        return elem, false
+    end
+end
+
 -- P.S. codeblocks and inlined code are not containing Str, so everything is
 -- fine, they are not italized
 
 local filter = {
     traverse = "topdown",
+    Div = Div,
     Link = Link,
     Emph = Emph,
     Str = Str,
