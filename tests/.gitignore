@@ -1,3 +1,5 @@
-*.pdf
-usual
-filtered
+original.raw
+filtered.raw
+
+original.pdf
+filtered.pdf
